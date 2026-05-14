@@ -829,7 +829,7 @@
 <script>
 const platNames = {ttd:'The Trade Desk',dv360:'DV360',yahoo:'Yahoo DSP',meta:'Meta',amazon:'Amazon DSP',walmart:'Walmart DSP',cadent:'Cadent',basis:'Basis',ix:'Index Exchange',pubmatic:'PubMatic',openx:'OpenX',liveramp:'LiveRamp'};
 let currentPlat = 'ttd';
-const sheetsUrl = 'https://script.google.com/macros/s/AKfycbx3TGXboRde5y2-cViiT-0edhJYT9i26Jrh6GWCdu8jzah_VZLuEU1yYobN4XymGHrU3g/exec';
+const sheetsUrl = 'https://script.google.com/macros/s/AKfycbyPGUmsQkORrj7LSWtaMTC4VavF-zNuW89Xlo74PZtJtSk75_wctKZRA4WkNxbQvthVpA/exec';
 
 document.getElementById('adate').value = new Date().toISOString().split('T')[0];
 document.getElementById('header-date').textContent = new Date().toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
@@ -964,17 +964,22 @@ document.getElementById('submitbtn').addEventListener('click', async function() 
   pw.style.display = 'block';
 
   try {
-    await fetch(sheetsUrl, {
+    const response = await fetch(sheetsUrl, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(rows)
     });
+    const data = await response.json();
     pf.style.width = '100%';
     pl.textContent = '';
     pw.style.display = 'none';
-    msg.textContent = rows.length + ' rows submitted for ' + platNames[currentPlat] + ' — check your sheet ✓';
-    msg.style.color = '#1a7a47';
+    if (data.status === 'ok') {
+      msg.textContent = rows.length + ' rows submitted for ' + platNames[currentPlat] + ' ✓';
+      msg.style.color = '#1a7a47';
+    } else {
+      msg.textContent = 'Script error: ' + (data.message || 'Unknown error');
+      msg.style.color = '#b52020';
+    }
   } catch(e) {
     pw.style.display = 'none';
     msg.textContent = 'Error: ' + e.message;
